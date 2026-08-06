@@ -1,0 +1,12 @@
+{
+    "name": "MeshCompromise",
+    "version": "0.1.0",
+    "description": "Bridge that runs MeshCore alongside Meshtastic on a single LoRa radio",
+    "license": "GPL-3.0-only",
+    "frameworks": "*",
+    "platforms": "*",
+    "build": {
+        "srcDir": "src",
+        "includeDir": "include"
+    }
+}
