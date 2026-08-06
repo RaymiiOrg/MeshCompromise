@@ -43,17 +43,43 @@ bool frequenciesInterchangeable(float aMhz, float bMhz, float bandwidthKhz)
     return deltaKhz <= toleranceKhz;
 }
 
-SwitchMode selectSwitchMode(const LoraProfile &meshtastic, const LoraProfile &meshcore)
+int imageCalibrationBand(float frequencyMhz)
+{
+    if (frequencyMhz >= 430.0f && frequencyMhz <= 440.0f)
+        return 1;
+    if (frequencyMhz >= 470.0f && frequencyMhz <= 510.0f)
+        return 2;
+    if (frequencyMhz >= 779.0f && frequencyMhz <= 787.0f)
+        return 3;
+    if (frequencyMhz >= 863.0f && frequencyMhz <= 870.0f)
+        return 4;
+    if (frequencyMhz >= 902.0f && frequencyMhz <= 928.0f)
+        return 5;
+    return 0;
+}
+
+bool sameImageCalibrationBand(float aMhz, float bMhz)
+{
+    const int band = imageCalibrationBand(aMhz);
+    return band != 0 && band == imageCalibrationBand(bMhz);
+}
+
+AlignmentBlocker alignmentBlocker(const LoraProfile &meshtastic, const LoraProfile &meshcore)
 {
     if (meshtastic.spreadingFactor == 0 || meshcore.spreadingFactor == 0)
-        return SwitchMode::Split;
+        return AlignmentBlocker::Unconfigured;
     if (meshtastic.spreadingFactor != meshcore.spreadingFactor)
-        return SwitchMode::Split;
+        return AlignmentBlocker::SpreadingFactor;
     if (std::fabs(meshtastic.bandwidthKhz - meshcore.bandwidthKhz) >= kBandwidthEpsilonKhz)
-        return SwitchMode::Split;
+        return AlignmentBlocker::Bandwidth;
     if (!frequenciesInterchangeable(meshtastic.frequencyMhz, meshcore.frequencyMhz, meshtastic.bandwidthKhz))
-        return SwitchMode::Split;
-    return SwitchMode::Aligned;
+        return AlignmentBlocker::Frequency;
+    return AlignmentBlocker::None;
+}
+
+SwitchMode selectSwitchMode(const LoraProfile &meshtastic, const LoraProfile &meshcore)
+{
+    return alignmentBlocker(meshtastic, meshcore) == AlignmentBlocker::None ? SwitchMode::Aligned : SwitchMode::Split;
 }
 
 uint16_t meshcorePreambleSymbols(uint8_t spreadingFactor)
@@ -70,6 +96,48 @@ LoraProfile meshcoreDefaultProfile()
     profile.codingRate = 5;
     profile.syncWord = kMeshcoreSyncWord;
     profile.preambleSymbols = meshcorePreambleSymbols(profile.spreadingFactor);
+    return profile;
+}
+
+LoraProfile meshcorePublicChannelProfile()
+{
+    // The real MeshCore "Public" channel's actual over-the-air parameters -
+    // distinct from meshcoreDefaultProfile()'s SF8, which many tests pin
+    // exact airtime numbers to and which does not match real MeshCore
+    // hardware. Used as BridgeSettings::meshcore's default so a fresh
+    // install can reach real MeshCore devices without any on-device
+    // reconfiguration.
+    LoraProfile profile;
+    profile.frequencyMhz = 869.618f;
+    profile.bandwidthKhz = 62.5f;
+    profile.spreadingFactor = 7;
+    profile.codingRate = 5;
+    profile.syncWord = kMeshcoreSyncWord;
+    profile.preambleSymbols = meshcorePreambleSymbols(profile.spreadingFactor);
+    return profile;
+}
+
+LoraProfile meshcoreCardputerProfile()
+{
+    LoraProfile profile;
+    profile.frequencyMhz = 869.525f;
+    profile.bandwidthKhz = 250.0f;
+    profile.spreadingFactor = 11;
+    profile.codingRate = 5;
+    profile.syncWord = kMeshcoreSyncWord;
+    profile.preambleSymbols = meshcorePreambleSymbols(profile.spreadingFactor);
+    return profile;
+}
+
+LoraProfile meshtasticLongFastProfile()
+{
+    LoraProfile profile;
+    profile.frequencyMhz = 869.525f;
+    profile.bandwidthKhz = 250.0f;
+    profile.spreadingFactor = 11;
+    profile.codingRate = 5;
+    profile.syncWord = kMeshtasticSyncWord;
+    profile.preambleSymbols = 16;
     return profile;
 }
 

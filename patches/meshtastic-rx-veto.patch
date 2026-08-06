@@ -1,0 +1,29 @@
+diff --git a/src/mesh/RadioLibInterface.cpp b/src/mesh/RadioLibInterface.cpp
+index 0000000..0000000 100644
+--- a/src/mesh/RadioLibInterface.cpp
++++ b/src/mesh/RadioLibInterface.cpp
+@@ -423,8 +423,10 @@ void RadioLibInterface::onNotify(uint32_t notification)
+         startReceive();
+         setTransmitDelay();
+         break;
+     case ISR_RX:
+-        handleReceiveInterrupt();
+-        startReceive();
++        if (!meshCompromiseTxVeto || !meshCompromiseTxVeto()) {
++            handleReceiveInterrupt();
++            startReceive();
++        }
+         setTransmitDelay();
+         break;
+diff --git a/src/mesh/SX126xInterface.cpp b/src/mesh/SX126xInterface.cpp
+index 0000000..0000000 100644
+--- a/src/mesh/SX126xInterface.cpp
++++ b/src/mesh/SX126xInterface.cpp
+@@ -454,5 +454,7 @@ template <typename T> void SX126xInterface<T>::resetAGC()
+     // Safety: don't reset mid-packet
+     if (sendingPacket != NULL || (isReceiving && isActivelyReceiving()))
+         return;
++    if (meshCompromiseTxVeto && meshCompromiseTxVeto())
++        return;
+
+     LOG_DEBUG("SX126x AGC reset: warm sleep + Calibrate(0x7F)");

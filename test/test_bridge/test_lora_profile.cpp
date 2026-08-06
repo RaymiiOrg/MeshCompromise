@@ -102,3 +102,48 @@ TEST(LoraProfile, UninitialisedProfileIsSplit)
     LoraProfile empty;
     EXPECT_EQ(selectSwitchMode(empty, meshcoreDefaultProfile()), SwitchMode::Split);
 }
+
+TEST(LoraProfile, EveryDatasheetImageCalibrationBandIsRecognised)
+{
+    EXPECT_EQ(imageCalibrationBand(434.0f), 1);
+    EXPECT_EQ(imageCalibrationBand(490.0f), 2);
+    EXPECT_EQ(imageCalibrationBand(783.0f), 3);
+    EXPECT_EQ(imageCalibrationBand(868.0f), 4);
+    EXPECT_EQ(imageCalibrationBand(915.0f), 5);
+}
+
+TEST(LoraProfile, BandEdgesAreInclusive)
+{
+    EXPECT_EQ(imageCalibrationBand(430.0f), 1);
+    EXPECT_EQ(imageCalibrationBand(440.0f), 1);
+    EXPECT_EQ(imageCalibrationBand(863.0f), 4);
+    EXPECT_EQ(imageCalibrationBand(870.0f), 4);
+}
+
+TEST(LoraProfile, FrequenciesOutsideEveryBandHaveNoCalibration)
+{
+    EXPECT_EQ(imageCalibrationBand(0.0f), 0);
+    EXPECT_EQ(imageCalibrationBand(450.0f), 0);
+    EXPECT_EQ(imageCalibrationBand(600.0f), 0);
+    EXPECT_EQ(imageCalibrationBand(800.0f), 0);
+    EXPECT_EQ(imageCalibrationBand(880.0f), 0);
+    EXPECT_EQ(imageCalibrationBand(2400.0f), 0);
+}
+
+TEST(LoraProfile, TheEuMeshtasticAndMeshcoreFrequenciesShareACalibrationBand)
+{
+    EXPECT_TRUE(sameImageCalibrationBand(meshtasticLongFastProfile().frequencyMhz, meshcoreDefaultProfile().frequencyMhz));
+}
+
+TEST(LoraProfile, CrossingABandBoundaryNeedsAFullRecalibration)
+{
+    EXPECT_FALSE(sameImageCalibrationBand(868.0f, 915.0f));
+    EXPECT_FALSE(sameImageCalibrationBand(434.0f, 490.0f));
+}
+
+TEST(LoraProfile, AnUncalibratableFrequencyNeverMatchesAnything)
+{
+    EXPECT_FALSE(sameImageCalibrationBand(0.0f, 0.0f));
+    EXPECT_FALSE(sameImageCalibrationBand(880.0f, 868.0f));
+    EXPECT_FALSE(sameImageCalibrationBand(868.0f, 880.0f));
+}

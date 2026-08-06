@@ -45,6 +45,111 @@ bool buildMirrorMessage(const char *text, size_t length, uint8_t channel, Mirror
     return true;
 }
 
+uint8_t meshcoreHeaderByte(uint8_t routeType, uint8_t payloadType)
+{
+    return static_cast<uint8_t>((routeType & 0x03) | ((payloadType & 0x0F) << kMeshcoreTypeShift));
+}
+
+bool buildGroupTextPayload(uint32_t timestamp, const char *senderName, const char *text, size_t length,
+                           GroupTextPayload &out)
+{
+    out.length = 0;
+    out.truncated = false;
+
+    if (senderName == nullptr || text == nullptr || length == 0)
+        return false;
+
+    const size_t nameLength = std::strlen(senderName);
+    if (nameLength == 0 || nameLength + 2 >= kMeshcoreMaxText)
+        return false;
+
+    const size_t prefixLength = nameLength + 2;
+    const size_t budget = kMeshcoreMaxText - prefixLength;
+    const size_t usable = truncateUtf8(text, length, budget);
+    if (usable == 0)
+        return false;
+
+    size_t index = 0;
+    out.bytes[index++] = static_cast<uint8_t>(timestamp & 0xFF);
+    out.bytes[index++] = static_cast<uint8_t>((timestamp >> 8) & 0xFF);
+    out.bytes[index++] = static_cast<uint8_t>((timestamp >> 16) & 0xFF);
+    out.bytes[index++] = static_cast<uint8_t>((timestamp >> 24) & 0xFF);
+    out.bytes[index++] = kGroupTextPlain;
+
+    std::memcpy(&out.bytes[index], senderName, nameLength);
+    index += nameLength;
+    out.bytes[index++] = ':';
+    out.bytes[index++] = ' ';
+
+    std::memcpy(&out.bytes[index], text, usable);
+    index += usable;
+    out.bytes[index] = 0;
+
+    out.length = index;
+    out.truncated = usable < length;
+    return true;
+}
+
+bool buildDirectTextPayload(uint32_t timestamp, const char *text, size_t length, GroupTextPayload &out)
+{
+    out.length = 0;
+    out.truncated = false;
+
+    if (text == nullptr || length == 0)
+        return false;
+
+    const size_t usable = truncateUtf8(text, length, kMeshcoreMaxText);
+    if (usable == 0)
+        return false;
+
+    size_t index = 0;
+    out.bytes[index++] = static_cast<uint8_t>(timestamp & 0xFF);
+    out.bytes[index++] = static_cast<uint8_t>((timestamp >> 8) & 0xFF);
+    out.bytes[index++] = static_cast<uint8_t>((timestamp >> 16) & 0xFF);
+    out.bytes[index++] = static_cast<uint8_t>((timestamp >> 24) & 0xFF);
+    out.bytes[index++] = kGroupTextPlain;
+
+    std::memcpy(&out.bytes[index], text, usable);
+    index += usable;
+    out.bytes[index] = 0;
+
+    out.length = index;
+    out.truncated = usable < length;
+    return true;
+}
+
+size_t extractGroupText(const uint8_t *payload, size_t length, char *out, size_t capacity)
+{
+    if (payload == nullptr || out == nullptr || capacity == 0)
+        return 0;
+    if (length <= kGroupTextHeader)
+        return 0;
+    if ((payload[4] >> 2) != 0)
+        return 0;
+
+    const char *text = reinterpret_cast<const char *>(payload + kGroupTextHeader);
+    size_t available = length - kGroupTextHeader;
+
+    for (size_t i = 0; i < available; i++) {
+        if (text[i] == '\0') {
+            available = i;
+            break;
+        }
+    }
+
+    if (available == 0)
+        return 0;
+
+    const size_t limit = capacity - 1 < kMeshtasticMaxText ? capacity - 1 : kMeshtasticMaxText;
+    const size_t usable = truncateUtf8(text, available, limit);
+    if (usable == 0)
+        return 0;
+
+    std::memcpy(out, text, usable);
+    out[usable] = '\0';
+    return usable;
+}
+
 void MirrorHistory::record(uint32_t packetId)
 {
     if (contains(packetId))
@@ -86,6 +191,18 @@ void Mirror::resetCounters()
 {
     mirrored_ = 0;
     suppressed_ = 0;
+    injected_ = 0;
+}
+
+void Mirror::noteInjected(uint32_t packetId)
+{
+    history_.record(packetId);
+    injected_++;
+}
+
+void Mirror::suppress(uint32_t packetId)
+{
+    history_.record(packetId);
 }
 
 MirrorDecision Mirror::evaluate(const MirrorSource &source) const

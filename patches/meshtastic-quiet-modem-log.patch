@@ -1,0 +1,59 @@
+diff --git a/src/mesh/RadioInterface.cpp b/src/mesh/RadioInterface.cpp
+index 0000000..0000000 100644
+--- a/src/mesh/RadioInterface.cpp
++++ b/src/mesh/RadioInterface.cpp
+@@ -833,8 +833,5 @@ uint32_t RadioInterface::getTxDelayMsecWeighted(meshtastic_MeshPacket *p)
+     if (shouldRebroadcastEarlyLikeRouter(p)) {
+         delay = random(0, 2 * CWsize) * slotTimeMsec;
+-        LOG_DEBUG("rx_snr found in packet. Router: setting tx delay:%d", delay);
+     } else {
+-        // offset the maximum delay for routers: (2 * CWmax * slotTimeMsec)
+         delay = (2 * CWmax * slotTimeMsec) + random(0, pow_of_2(CWsize)) * slotTimeMsec;
+-        LOG_DEBUG("rx_snr found in packet. Setting tx delay:%d", delay);
+     }
+@@ -1363,18 +1360,3 @@ void RadioInterface::applyModemConfig()
+     slotTimeMsec = computeSlotTimeMsec();
+     preambleTimeMsec = preambleLength * (pow_of_2(sf) / bw);
+-
+-    LOG_INFO("Radio freq=%.3f, config.lora.frequency_offset=%.3f", freq, loraConfig.frequency_offset);
+-    LOG_INFO("Set radio: region=%s, name=%s, config=%u, ch=%d, power=%d", newRegion->name, channelName, loraConfig.modem_preset,
+-             channel_num, power);
+-    LOG_INFO("newRegion->freqStart -> newRegion->freqEnd: %f -> %f (%f MHz)", newRegion->freqStart, newRegion->freqEnd,
+-             newRegion->freqEnd - newRegion->freqStart);
+-    LOG_INFO("numFreqSlots: %u x %.3fkHz", numFreqSlots, bw);
+-    if (newRegion->overrideSlot > 0) {
+-        LOG_INFO("Using region explicit override slot: %d", newRegion->overrideSlot);
+-    } else if (newRegion->overrideSlot == OVERRIDE_SLOT_PRESET_HASH) {
+-        LOG_INFO("Using region preset name hash for slot selection");
+-    }
+-    LOG_INFO("channel_num: %d", channel_num + 1);
+-    LOG_INFO("frequency: %f", getFreq());
+-    LOG_INFO("Slot time: %u msec, preamble time: %u msec", slotTimeMsec, preambleTimeMsec);
+ } // end of applyModemConfig
+@@ -1449,5 +1431,3 @@ void RadioInterface::limitPower(int8_t loraMaxPower)
+     if (power > loraMaxPower) // Clamp power to maximum defined level
+         power = loraMaxPower;
+-
+-    LOG_INFO("Final Tx power: %d dBm", power);
+ }
+diff --git a/src/mesh/RadioLibInterface.cpp b/src/mesh/RadioLibInterface.cpp
+index 0000000..0000000 100644
+--- a/src/mesh/RadioLibInterface.cpp
++++ b/src/mesh/RadioLibInterface.cpp
+@@ -234,8 +234,5 @@ bool RadioLibInterface::canSleep(bool deepSleep)
+     // the TX finishes on its own, but deep sleep powers the radio down and would truncate the
+     // packet on air.
+     bool res = txQueue.empty() && !(deepSleep && isSending());
+-    if (!res) { // only print debug messages if we are vetoing sleep
+-        LOG_DEBUG("Radio wait to sleep, txEmpty=%d, txInFlight=%d", txQueue.empty(), isSending());
+-    }
+     return res;
+ }
+@@ -512,7 +509,5 @@ void RadioLibInterface::setTransmitDelay()
+         startTransmitTimer(true);
+     } else {
+-        // If there is a SNR, start a timer scaled based on that SNR.
+-        LOG_DEBUG("rx_snr found. hop_limit:%d rx_snr:%f", p->hop_limit, p->rx_snr);
+         startTransmitTimerRebroadcast(p);
+     }
+ }

@@ -16,17 +16,27 @@ struct LoraProfile {
 
 enum class SwitchMode { Aligned, Split };
 
+enum class AlignmentBlocker { None, Unconfigured, SpreadingFactor, Bandwidth, Frequency };
+
 bool operator==(const LoraProfile &a, const LoraProfile &b);
 bool operator!=(const LoraProfile &a, const LoraProfile &b);
 
 float frequencyToleranceKhz(float bandwidthKhz);
 bool frequenciesInterchangeable(float aMhz, float bMhz, float bandwidthKhz);
 
+int imageCalibrationBand(float frequencyMhz);
+
+bool sameImageCalibrationBand(float aMhz, float bMhz);
+
 SwitchMode selectSwitchMode(const LoraProfile &meshtastic, const LoraProfile &meshcore);
+AlignmentBlocker alignmentBlocker(const LoraProfile &meshtastic, const LoraProfile &meshcore);
 
 uint16_t meshcorePreambleSymbols(uint8_t spreadingFactor);
 
 LoraProfile meshcoreDefaultProfile();
+LoraProfile meshcoreCardputerProfile();
+LoraProfile meshcorePublicChannelProfile();
 LoraProfile meshtasticNarrowSlowProfile();
+LoraProfile meshtasticLongFastProfile();
 
 } // namespace meshcompromise

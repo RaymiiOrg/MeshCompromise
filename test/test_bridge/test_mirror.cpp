@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <cstring>
 #include <string>
 
 #include "meshcompromise/mirror.h"
@@ -39,7 +40,7 @@ TEST(Mirror, EnabledByDefault)
 {
     MirrorConfig config;
     EXPECT_TRUE(config.enabled);
-    EXPECT_EQ(config.policy, MirrorPolicy::LocalOnly);
+    EXPECT_EQ(config.policy, MirrorPolicy::AllBroadcasts);
 }
 
 TEST(Mirror, MirrorsLocalBroadcastText)
@@ -208,4 +209,110 @@ TEST(MirrorPayload, NullTextIsRejected)
 {
     MirrorMessage message;
     EXPECT_FALSE(buildMirrorMessage(nullptr, 10, 0, message));
+}
+
+TEST(ReverseMirror, EnabledByDefault)
+{
+    MirrorConfig config;
+    EXPECT_TRUE(config.reverseEnabled);
+}
+
+TEST(ReverseMirror, GroupTextRoundTripsBackToPlainText)
+{
+    GroupTextPayload payload;
+    const std::string text = "hello from meshcore";
+    ASSERT_TRUE(buildGroupTextPayload(0x1234, "core", text.c_str(), text.size(), payload));
+
+    char out[kMeshtasticMaxText + 1] = {0};
+    const size_t length = extractGroupText(payload.bytes, payload.length, out, sizeof(out));
+    ASSERT_GT(length, 0u);
+    EXPECT_EQ(std::string(out, length), "core: " + text);
+}
+
+TEST(ReverseMirror, ExtractRejectsHeaderOnlyPayload)
+{
+    const uint8_t payload[kGroupTextHeader] = {0};
+    char out[32] = {0};
+    EXPECT_EQ(extractGroupText(payload, sizeof(payload), out, sizeof(out)), 0u);
+}
+
+TEST(ReverseMirror, ExtractRejectsNonPlainTextType)
+{
+    uint8_t payload[kGroupTextHeader + 4] = {0};
+    payload[4] = 1 << 2;
+    payload[kGroupTextHeader] = 'h';
+    payload[kGroupTextHeader + 1] = 'i';
+
+    char out[32] = {0};
+    EXPECT_EQ(extractGroupText(payload, sizeof(payload), out, sizeof(out)), 0u);
+}
+
+TEST(ReverseMirror, ExtractStopsAtTerminator)
+{
+    uint8_t payload[kGroupTextHeader + 8] = {0};
+    memcpy(&payload[kGroupTextHeader], "ab\0cdef", 7);
+
+    char out[32] = {0};
+    const size_t length = extractGroupText(payload, sizeof(payload), out, sizeof(out));
+    EXPECT_EQ(length, 2u);
+    EXPECT_STREQ(out, "ab");
+}
+
+TEST(ReverseMirror, ExtractRespectsOutputCapacity)
+{
+    GroupTextPayload payload;
+    const std::string text(140, 'z');
+    ASSERT_TRUE(buildGroupTextPayload(1, "n", text.c_str(), text.size(), payload));
+
+    char out[16] = {0};
+    const size_t length = extractGroupText(payload.bytes, payload.length, out, sizeof(out));
+    EXPECT_EQ(length, sizeof(out) - 1);
+    EXPECT_EQ(out[sizeof(out) - 1], '\0');
+}
+
+TEST(ReverseMirror, ExtractDoesNotSplitMultibyteCharacters)
+{
+    std::string text;
+    while (text.size() < 60)
+        text += "\xE2\x82\xAC";
+
+    GroupTextPayload payload;
+    ASSERT_TRUE(buildGroupTextPayload(1, "ab", text.c_str(), text.size(), payload));
+
+    char out[19] = {0};
+    const size_t length = extractGroupText(payload.bytes, payload.length, out, sizeof(out));
+    EXPECT_EQ(length, 16u);
+    EXPECT_EQ(std::string(out, length), "ab: \xE2\x82\xAC\xE2\x82\xAC\xE2\x82\xAC\xE2\x82\xAC");
+}
+
+TEST(ReverseMirror, InjectedPacketIsNotMirroredBack)
+{
+    Mirror mirror = makeMirror();
+    MirrorMessage message;
+    const std::string text = "core: hi";
+
+    mirror.noteInjected(0x5150);
+    EXPECT_EQ(mirror.injectedCount(), 1u);
+
+    MirrorSource echoed = localBroadcast(0x5150);
+    EXPECT_EQ(mirror.prepare(echoed, text.c_str(), text.size(), message), MirrorDecision::AlreadyMirrored);
+    EXPECT_EQ(mirror.mirroredCount(), 0u);
+}
+
+TEST(ReverseMirror, InjectedMarkerDoesNotBlockOtherPackets)
+{
+    Mirror mirror = makeMirror();
+    MirrorMessage message;
+    const std::string text = "unrelated";
+
+    mirror.noteInjected(0x1111);
+    EXPECT_EQ(mirror.prepare(localBroadcast(0x2222), text.c_str(), text.size(), message), MirrorDecision::Send);
+}
+
+TEST(ReverseMirror, ResetCountersClearsInjected)
+{
+    Mirror mirror = makeMirror();
+    mirror.noteInjected(1);
+    mirror.resetCounters();
+    EXPECT_EQ(mirror.injectedCount(), 0u);
 }

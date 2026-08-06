@@ -80,10 +80,71 @@ TEST(Airtime, OversizedScanPeriodIsRejected)
     EXPECT_FALSE(scanPeriodCoversPreamble(200, profile));
 }
 
-TEST(Airtime, DetectDwellCoversEightSymbols)
+TEST(Airtime, DetectDwellMatchesTheRadioLibCadSymbolCount)
 {
     const LoraProfile profile = meshcoreDefaultProfile();
     EXPECT_GE(minimumDetectDwellMs(profile), static_cast<uint32_t>(symbolTimeMs(62.5f, 8) * 8.0f));
+    EXPECT_LT(minimumDetectDwellMs(profile), static_cast<uint32_t>(symbolTimeMs(62.5f, 8) * 9.0f));
+}
+
+TEST(Airtime, TheScanPeriodCeilingStillCoversThePreamble)
+{
+    for (uint8_t sf = 5; sf <= 12; sf++) {
+        LoraProfile profile = meshcoreDefaultProfile();
+        profile.spreadingFactor = sf;
+        profile.preambleSymbols = meshcorePreambleSymbols(sf);
+
+        const uint32_t ceiling = maxScanPeriodMs(profile);
+        EXPECT_GT(ceiling, 0u) << "sf " << static_cast<int>(sf);
+        EXPECT_TRUE(scanPeriodCoversPreamble(ceiling, profile)) << "sf " << static_cast<int>(sf);
+    }
+}
+
+TEST(Airtime, TheScanPeriodCeilingIsNeverBelowTheRecommendedPeriod)
+{
+    const LoraProfile profile = meshcoreDefaultProfile();
+    EXPECT_GE(maxScanPeriodMs(profile), recommendedScanPeriodMs(profile));
+}
+
+TEST(Airtime, PacketScoreIsZeroBelowTheMeshcoreSnrThreshold)
+{
+    EXPECT_FLOAT_EQ(packetScore(-11.0f, 8, 64), 0.0f);
+    EXPECT_FLOAT_EQ(packetScore(-21.0f, 12, 64), 0.0f);
+}
+
+TEST(Airtime, PacketScoreRisesWithSnr)
+{
+    EXPECT_LT(packetScore(-5.0f, 8, 64), packetScore(0.0f, 8, 64));
+}
+
+TEST(Airtime, PacketScoreFallsWithPacketLength)
+{
+    EXPECT_GT(packetScore(0.0f, 8, 32), packetScore(0.0f, 8, 200));
+}
+
+TEST(Airtime, PacketScoreStaysWithinZeroToOne)
+{
+    for (uint8_t sf = 7; sf <= 12; sf++) {
+        for (int len = 0; len <= 256; len += 32) {
+            for (float snr = -25.0f; snr <= 20.0f; snr += 2.5f) {
+                const float score = packetScore(snr, sf, len);
+                EXPECT_GE(score, 0.0f);
+                EXPECT_LE(score, 1.0f);
+            }
+        }
+    }
+}
+
+TEST(Airtime, PacketScoreRejectsSpreadingFactorsMeshcoreDoesNotScore)
+{
+    EXPECT_FLOAT_EQ(packetScore(10.0f, 6, 64), 0.0f);
+    EXPECT_FLOAT_EQ(packetScore(10.0f, 13, 64), 0.0f);
+}
+
+TEST(Airtime, PacketScoreMatchesMeshcoreAtTheThresholdBoundary)
+{
+    EXPECT_FLOAT_EQ(packetScore(-10.0f, 8, 0), 0.0f);
+    EXPECT_GT(packetScore(-9.9f, 8, 0), 0.0f);
 }
 
 TEST(Airtime, ScanPeriodDefinedForSlowerProfiles)

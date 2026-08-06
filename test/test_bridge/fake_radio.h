@@ -11,8 +11,10 @@ class FakeRadio : public RadioOps
 {
   public:
     bool busy = false;
+    bool hostTxPending = false;
     bool cadActive = false;
     bool receiving = false;
+    bool packetInProgress = false;
     bool txPending = false;
     bool txBusy = false;
 
@@ -25,6 +27,8 @@ class FakeRadio : public RadioOps
     std::vector<SwitchMode> enterModes;
 
     bool meshtasticBusy() override { return busy; }
+
+    bool meshtasticTxPending() override { return hostTxPending; }
 
     void enterMeshcore(SwitchMode mode, const LoraProfile &) override
     {
@@ -48,6 +52,8 @@ class FakeRadio : public RadioOps
     bool channelActive() override { return cadActive; }
 
     bool meshcoreReceiving() override { return receiving; }
+
+    bool meshcorePacketInProgress() override { return packetInProgress; }
 
     bool meshcoreTxPending() override { return txPending; }
 

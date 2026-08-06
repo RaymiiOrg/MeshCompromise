@@ -21,6 +21,14 @@ uint32_t recommendedScanPeriodMs(const LoraProfile &profile);
 
 bool scanPeriodCoversPreamble(uint32_t periodMs, const LoraProfile &profile);
 
+uint32_t maxScanPeriodMs(const LoraProfile &profile);
+
 uint32_t minimumDetectDwellMs(const LoraProfile &profile);
+
+uint32_t scanExcursionMs(const LoraProfile &meshcore, SwitchMode mode);
+
+bool hostToleratesScanning(const LoraProfile &meshtastic, const LoraProfile &meshcore, SwitchMode mode);
+
+float packetScore(float snr, uint8_t spreadingFactor, int packetLength);
 
 } // namespace meshcompromise

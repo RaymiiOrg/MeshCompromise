@@ -9,3 +9,6 @@ build/
 *.bin
 *.uf2
 __pycache__/
+*.gcda
+*.gcno
+*.gcov

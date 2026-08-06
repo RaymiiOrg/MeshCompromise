@@ -1,0 +1,95 @@
+name: Build
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  bridge-tests:
+    name: Bridge unit tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: sudo apt-get update && sudo apt-get install -y clang-tidy
+      - run: ./scripts/lint.sh
+      - run: python3 scripts/gen_meshtastic_wire.py --check
+      - run: pio test -e native
+      - run: python3 scripts/vendor_offline_deps.py --env coverage
+      - run: pio test -e coverage
+      - run: >
+          gcovr --root . --filter 'bridge/src/.*' --filter 'bridge/include/.*'
+          --exclude-unreachable-branches --print-summary --fail-under-line 97
+      - run: node --check tools/flasher/app.js
+      - run: python3 scripts/vendor_flasher_deps.py --verify
+
+  blackbox:
+    name: Upstream black-box receive
+    runs-on: ubuntu-24.04
+    needs: bridge-tests
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+          cache: pip
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: pio-portduino-${{ hashFiles('external/meshtastic/variants/native/portduino.ini') }}
+          restore-keys: pio-portduino-
+      - run: >
+          sudo apt-get update && sudo apt-get install -y libbluetooth-dev libgpiod-dev libyaml-cpp-dev
+          libjsoncpp-dev openssl libssl-dev libulfius-dev liborcania-dev libusb-1.0-0-dev libi2c-dev
+          libuv1-dev libcurl4-gnutls-dev
+      - run: pip install -r requirements.txt
+      - run: python scripts/vendor_libdeps.py --check
+      - run: python scripts/vendor_libdeps.py --stage --env coverage
+      - run: python scripts/prepare_firmware.py --tests-only
+      - shell: bash
+        run: pio test -d external/meshtastic -e coverage -f test_meshcompromise -v 2>&1 | grep -vE "SKIPPED|^(DEBUG|INFO |WARN |ERROR) \||does not exist"
+      - name: Firmware glue coverage
+        run: >
+          gcovr --root external/meshtastic
+          --filter '.*/test_meshcompromise/(contact_directory|text_injector|mirror_module|settings_store|ui_input)\.cpp'
+          --exclude-unreachable-branches --print-summary --txt --fail-under-line 95
+
+  firmware:
+    name: Cardputer ADV firmware
+    runs-on: ubuntu-24.04
+    needs: bridge-tests
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+          cache: pip
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: pio-cardputer-${{ hashFiles('external/meshtastic/platformio.ini') }}
+          restore-keys: pio-cardputer-
+      - run: pip install -r requirements.txt
+      - run: python scripts/prepare_firmware.py
+      - run: pio run -d external/meshtastic -e m5stack-cardputer-adv-meshcore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware-m5stack-cardputer-adv-meshcore
+          path: |
+            external/meshtastic/.pio/build/m5stack-cardputer-adv-meshcore/*.bin
+            external/meshtastic/.pio/build/m5stack-cardputer-adv-meshcore/*.elf
+          if-no-files-found: error

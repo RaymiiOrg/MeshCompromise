@@ -1,0 +1,2 @@
+platformio>=6.1.19,<7
+gcovr
