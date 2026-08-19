@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MeshCompromise Serial Monitor</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>MeshCompromise Serial Monitor</h1>
+    <p class="sub">Capture the Cardputer's full serial log straight from the browser, nothing truncated.</p>
+  </div>
+  <nav><a href="../flasher/">&larr; Flasher</a></nav>
+</header>
+
+<div class="card">
+  <h2>Device</h2>
+  <div class="row">
+    <button class="primary" id="connect">Connect</button>
+    <button id="disconnect">Disconnect</button>
+    <label>Baud
+      <select id="baud">
+        <option value="115200" selected>115200</option>
+        <option value="921600">921600</option>
+        <option value="460800">460800</option>
+        <option value="230400">230400</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="autoscroll" checked> Autoscroll</label>
+    <span class="status" id="status">not connected</span>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Log</h2>
+  <div class="row" style="margin-bottom: 12px;">
+    <input type="text" id="filter" placeholder="Highlight lines containing&hellip;" style="flex: 1; min-width: 200px;">
+    <span class="stats" id="stats">0 lines</span>
+    <button id="selectall">Select all</button>
+    <button id="copy">Copy</button>
+    <button id="clear">Clear</button>
+    <button id="download">Download full log</button>
+  </div>
+  <pre class="log" id="log"></pre>
+  <div class="send" style="margin-top: 12px;">
+    <input type="text" id="sendline" placeholder="Type a line to send to the device and press Enter&hellip;" disabled>
+    <button id="send" disabled>Send</button>
+  </div>
+</div>
+
+<div class="card warn">
+  <h2>Requirements</h2>
+  <p class="note">
+    Needs the <strong>Web Serial API</strong> (Chrome or Edge 89+; Firefox and Safari will not work), and must be served rather
+    than opened as a file &mdash; from the repository root run <code>python3 -m http.server 8000</code> and open
+    <code>http://localhost:8000/tools/monitor/</code>. Connecting here just opens the port for reading/writing; it does not
+    reset the device the way the flasher's hard-reset does.
+  </p>
+  <p class="note">
+    Highlighting never hides a line &mdash; it only marks matches, so scrolling back (or the downloaded file) always has
+    everything the device actually sent, not a filtered subset.
+  </p>
+</div>
+
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

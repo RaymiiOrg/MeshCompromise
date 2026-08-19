@@ -1,0 +1,14 @@
+.pio/
+.pioenvs/
+.piolibdeps/
+.vscode/
+build/
+*.o
+*.a
+*.elf
+*.bin
+*.uf2
+__pycache__/
+*.gcda
+*.gcno
+*.gcov

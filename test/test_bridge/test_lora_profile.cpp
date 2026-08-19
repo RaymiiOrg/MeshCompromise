@@ -1,0 +1,149 @@
+#include <gtest/gtest.h>
+
+#include "meshcompromise/lora_profile.h"
+
+using namespace meshcompromise;
+
+TEST(LoraProfile, MeshcoreDefaultsMatchUpstreamBuildFlags)
+{
+    const LoraProfile profile = meshcoreDefaultProfile();
+    EXPECT_FLOAT_EQ(profile.frequencyMhz, 869.618f);
+    EXPECT_FLOAT_EQ(profile.bandwidthKhz, 62.5f);
+    EXPECT_EQ(profile.spreadingFactor, 8);
+    EXPECT_EQ(profile.codingRate, 5);
+    EXPECT_EQ(profile.syncWord, 0x12);
+}
+
+TEST(LoraProfile, MeshtasticNarrowSlowMatchesPresetTable)
+{
+    const LoraProfile profile = meshtasticNarrowSlowProfile();
+    EXPECT_FLOAT_EQ(profile.bandwidthKhz, 62.5f);
+    EXPECT_EQ(profile.spreadingFactor, 8);
+    EXPECT_EQ(profile.codingRate, 6);
+    EXPECT_EQ(profile.syncWord, 0x2b);
+}
+
+TEST(LoraProfile, PreambleSymbolsFollowSpreadingFactor)
+{
+    EXPECT_EQ(meshcorePreambleSymbols(7), 32);
+    EXPECT_EQ(meshcorePreambleSymbols(8), 32);
+    EXPECT_EQ(meshcorePreambleSymbols(9), 16);
+    EXPECT_EQ(meshcorePreambleSymbols(12), 16);
+}
+
+TEST(LoraProfile, ToleranceIsQuarterBandwidth)
+{
+    EXPECT_FLOAT_EQ(frequencyToleranceKhz(62.5f), 15.625f);
+    EXPECT_FLOAT_EQ(frequencyToleranceKhz(250.0f), 62.5f);
+    EXPECT_FLOAT_EQ(frequencyToleranceKhz(0.0f), 0.0f);
+}
+
+TEST(LoraProfile, NarrowSlowAndMeshcoreDefaultAreAligned)
+{
+    EXPECT_EQ(selectSwitchMode(meshtasticNarrowSlowProfile(), meshcoreDefaultProfile()), SwitchMode::Aligned);
+}
+
+TEST(LoraProfile, TenKilohertzOffsetStaysWithinTolerance)
+{
+    EXPECT_TRUE(frequenciesInterchangeable(869.60825f, 869.618f, 62.5f));
+}
+
+TEST(LoraProfile, TwentyKilohertzOffsetExceedsTolerance)
+{
+    EXPECT_FALSE(frequenciesInterchangeable(869.598f, 869.618f, 62.5f));
+}
+
+TEST(LoraProfile, DifferentSpreadingFactorForcesSplit)
+{
+    LoraProfile meshtastic = meshtasticNarrowSlowProfile();
+    meshtastic.spreadingFactor = 11;
+    EXPECT_EQ(selectSwitchMode(meshtastic, meshcoreDefaultProfile()), SwitchMode::Split);
+}
+
+TEST(LoraProfile, DifferentBandwidthForcesSplit)
+{
+    LoraProfile meshtastic = meshtasticNarrowSlowProfile();
+    meshtastic.bandwidthKhz = 250.0f;
+    EXPECT_EQ(selectSwitchMode(meshtastic, meshcoreDefaultProfile()), SwitchMode::Split);
+}
+
+TEST(LoraProfile, LongFastAgainstMeshcoreDefaultIsSplit)
+{
+    LoraProfile longFast;
+    longFast.frequencyMhz = 869.525f;
+    longFast.bandwidthKhz = 250.0f;
+    longFast.spreadingFactor = 11;
+    longFast.codingRate = 5;
+    longFast.syncWord = 0x2b;
+    longFast.preambleSymbols = 16;
+    EXPECT_EQ(selectSwitchMode(longFast, meshcoreDefaultProfile()), SwitchMode::Split);
+}
+
+TEST(LoraProfile, CodingRateDifferenceDoesNotForceSplit)
+{
+    LoraProfile meshtastic = meshtasticNarrowSlowProfile();
+    LoraProfile meshcore = meshcoreDefaultProfile();
+    meshtastic.frequencyMhz = meshcore.frequencyMhz;
+    EXPECT_NE(meshtastic.codingRate, meshcore.codingRate);
+    EXPECT_EQ(selectSwitchMode(meshtastic, meshcore), SwitchMode::Aligned);
+}
+
+TEST(LoraProfile, SyncWordDifferenceDoesNotForceSplit)
+{
+    LoraProfile meshtastic = meshtasticNarrowSlowProfile();
+    LoraProfile meshcore = meshcoreDefaultProfile();
+    meshtastic.frequencyMhz = meshcore.frequencyMhz;
+    EXPECT_NE(meshtastic.syncWord, meshcore.syncWord);
+    EXPECT_EQ(selectSwitchMode(meshtastic, meshcore), SwitchMode::Aligned);
+}
+
+TEST(LoraProfile, UninitialisedProfileIsSplit)
+{
+    LoraProfile empty;
+    EXPECT_EQ(selectSwitchMode(empty, meshcoreDefaultProfile()), SwitchMode::Split);
+}
+
+TEST(LoraProfile, EveryDatasheetImageCalibrationBandIsRecognised)
+{
+    EXPECT_EQ(imageCalibrationBand(434.0f), 1);
+    EXPECT_EQ(imageCalibrationBand(490.0f), 2);
+    EXPECT_EQ(imageCalibrationBand(783.0f), 3);
+    EXPECT_EQ(imageCalibrationBand(868.0f), 4);
+    EXPECT_EQ(imageCalibrationBand(915.0f), 5);
+}
+
+TEST(LoraProfile, BandEdgesAreInclusive)
+{
+    EXPECT_EQ(imageCalibrationBand(430.0f), 1);
+    EXPECT_EQ(imageCalibrationBand(440.0f), 1);
+    EXPECT_EQ(imageCalibrationBand(863.0f), 4);
+    EXPECT_EQ(imageCalibrationBand(870.0f), 4);
+}
+
+TEST(LoraProfile, FrequenciesOutsideEveryBandHaveNoCalibration)
+{
+    EXPECT_EQ(imageCalibrationBand(0.0f), 0);
+    EXPECT_EQ(imageCalibrationBand(450.0f), 0);
+    EXPECT_EQ(imageCalibrationBand(600.0f), 0);
+    EXPECT_EQ(imageCalibrationBand(800.0f), 0);
+    EXPECT_EQ(imageCalibrationBand(880.0f), 0);
+    EXPECT_EQ(imageCalibrationBand(2400.0f), 0);
+}
+
+TEST(LoraProfile, TheEuMeshtasticAndMeshcoreFrequenciesShareACalibrationBand)
+{
+    EXPECT_TRUE(sameImageCalibrationBand(meshtasticLongFastProfile().frequencyMhz, meshcoreDefaultProfile().frequencyMhz));
+}
+
+TEST(LoraProfile, CrossingABandBoundaryNeedsAFullRecalibration)
+{
+    EXPECT_FALSE(sameImageCalibrationBand(868.0f, 915.0f));
+    EXPECT_FALSE(sameImageCalibrationBand(434.0f, 490.0f));
+}
+
+TEST(LoraProfile, AnUncalibratableFrequencyNeverMatchesAnything)
+{
+    EXPECT_FALSE(sameImageCalibrationBand(0.0f, 0.0f));
+    EXPECT_FALSE(sameImageCalibrationBand(880.0f, 868.0f));
+    EXPECT_FALSE(sameImageCalibrationBand(868.0f, 880.0f));
+}

@@ -1,0 +1,204 @@
+[submodule "external/meshtastic"]
+	path = external/meshtastic
+	url = https://github.com/meshtastic/firmware.git
+	ignore = dirty
+[submodule "external/meshcore"]
+	path = external/meshcore
+	url = https://github.com/meshcore-dev/MeshCore.git
+	ignore = dirty
+[submodule "external/crypto"]
+	path = external/crypto
+	url = https://github.com/meshtastic/Crypto.git
+	branch = main
+[submodule "external/nanopb"]
+	path = external/nanopb
+	url = https://github.com/nanopb/nanopb.git
+[submodule "external/platform-native"]
+	path = external/platform-native
+	url = https://github.com/meshtastic/platform-native.git
+[submodule "external/googletest"]
+	path = external/googletest
+	url = https://github.com/google/googletest.git
+[submodule "external/radiolib"]
+	path = external/radiolib
+	url = https://github.com/jgromes/RadioLib.git
+[submodule "external/libdeps/esp8266-oled-ssd1306"]
+	path = external/libdeps/esp8266-oled-ssd1306
+	url = https://github.com/meshtastic/esp8266-oled-ssd1306.git
+[submodule "external/libdeps/OneButton"]
+	path = external/libdeps/OneButton
+	url = https://github.com/meshtastic/OneButton.git
+[submodule "external/libdeps/arduino-fsm"]
+	path = external/libdeps/arduino-fsm
+	url = https://github.com/meshtastic/arduino-fsm.git
+[submodule "external/libdeps/TinyGPSPlus"]
+	path = external/libdeps/TinyGPSPlus
+	url = https://github.com/meshtastic/TinyGPSPlus.git
+[submodule "external/libdeps/ArduinoThread"]
+	path = external/libdeps/ArduinoThread
+	url = https://github.com/meshtastic/ArduinoThread.git
+[submodule "external/libdeps/ErriezCRC32"]
+	path = external/libdeps/ErriezCRC32
+	url = https://github.com/Erriez/ErriezCRC32.git
+[submodule "external/libdeps/pubsubclient"]
+	path = external/libdeps/pubsubclient
+	url = https://github.com/thingsboard/pubsubclient.git
+[submodule "external/libdeps/NTPClient"]
+	path = external/libdeps/NTPClient
+	url = https://github.com/arduino-libraries/NTPClient.git
+[submodule "external/libdeps/Syslog"]
+	path = external/libdeps/Syslog
+	url = https://github.com/arcao/Syslog.git
+[submodule "external/libdeps/Adafruit_BusIO"]
+	path = external/libdeps/Adafruit_BusIO
+	url = https://github.com/adafruit/Adafruit_BusIO.git
+[submodule "external/libdeps/Adafruit_Sensor"]
+	path = external/libdeps/Adafruit_Sensor
+	url = https://github.com/adafruit/Adafruit_Sensor.git
+[submodule "external/libdeps/Adafruit-GFX-Library"]
+	path = external/libdeps/Adafruit-GFX-Library
+	url = https://github.com/adafruit/Adafruit-GFX-Library.git
+[submodule "external/libdeps/Adafruit_NeoPixel"]
+	path = external/libdeps/Adafruit_NeoPixel
+	url = https://github.com/adafruit/Adafruit_NeoPixel.git
+[submodule "external/libdeps/Adafruit_SSD1306"]
+	path = external/libdeps/Adafruit_SSD1306
+	url = https://github.com/adafruit/Adafruit_SSD1306.git
+[submodule "external/libdeps/Adafruit_BMP280_Library"]
+	path = external/libdeps/Adafruit_BMP280_Library
+	url = https://github.com/adafruit/Adafruit_BMP280_Library.git
+[submodule "external/libdeps/Adafruit-BMP085-Library"]
+	path = external/libdeps/Adafruit-BMP085-Library
+	url = https://github.com/adafruit/Adafruit-BMP085-Library.git
+[submodule "external/libdeps/Adafruit_BME280_Library"]
+	path = external/libdeps/Adafruit_BME280_Library
+	url = https://github.com/adafruit/Adafruit_BME280_Library.git
+[submodule "external/libdeps/Adafruit_DPS310"]
+	path = external/libdeps/Adafruit_DPS310
+	url = https://github.com/adafruit/Adafruit_DPS310.git
+[submodule "external/libdeps/Adafruit_SH110x"]
+	path = external/libdeps/Adafruit_SH110x
+	url = https://github.com/adafruit/Adafruit_SH110x.git
+[submodule "external/libdeps/Adafruit_MCP9808_Library"]
+	path = external/libdeps/Adafruit_MCP9808_Library
+	url = https://github.com/adafruit/Adafruit_MCP9808_Library.git
+[submodule "external/libdeps/Adafruit_INA260"]
+	path = external/libdeps/Adafruit_INA260
+	url = https://github.com/adafruit/Adafruit_INA260.git
+[submodule "external/libdeps/Adafruit_INA219"]
+	path = external/libdeps/Adafruit_INA219
+	url = https://github.com/adafruit/Adafruit_INA219.git
+[submodule "external/libdeps/Adafruit_MPU6050"]
+	path = external/libdeps/Adafruit_MPU6050
+	url = https://github.com/adafruit/Adafruit_MPU6050.git
+[submodule "external/libdeps/Adafruit_LIS3DH"]
+	path = external/libdeps/Adafruit_LIS3DH
+	url = https://github.com/adafruit/Adafruit_LIS3DH.git
+[submodule "external/libdeps/Adafruit_AHTX0"]
+	path = external/libdeps/Adafruit_AHTX0
+	url = https://github.com/adafruit/Adafruit_AHTX0.git
+[submodule "external/libdeps/Adafruit_LSM6DS"]
+	path = external/libdeps/Adafruit_LSM6DS
+	url = https://github.com/adafruit/Adafruit_LSM6DS.git
+[submodule "external/libdeps/Adafruit_TSL2591_Library"]
+	path = external/libdeps/Adafruit_TSL2591_Library
+	url = https://github.com/adafruit/Adafruit_TSL2591_Library.git
+[submodule "external/libdeps/EmotiBit_MLX90632"]
+	path = external/libdeps/EmotiBit_MLX90632
+	url = https://github.com/EmotiBit/EmotiBit_MLX90632.git
+[submodule "external/libdeps/Adafruit-MLX90614-Library"]
+	path = external/libdeps/Adafruit-MLX90614-Library
+	url = https://github.com/adafruit/Adafruit-MLX90614-Library.git
+[submodule "external/libdeps/INA3221_RT"]
+	path = external/libdeps/INA3221_RT
+	url = https://github.com/RobTillaart/INA3221_RT.git
+[submodule "external/libdeps/QMC5883LCompass"]
+	path = external/libdeps/QMC5883LCompass
+	url = https://github.com/mprograms/QMC5883LCompass.git
+[submodule "external/libdeps/DFRobot_RTU"]
+	path = external/libdeps/DFRobot_RTU
+	url = https://github.com/DFRobot/DFRobot_RTU.git
+[submodule "external/libdeps/DFRobot_RainfallSensor"]
+	path = external/libdeps/DFRobot_RainfallSensor
+	url = https://github.com/DFRobot/DFRobot_RainfallSensor.git
+[submodule "external/libdeps/INA226"]
+	path = external/libdeps/INA226
+	url = https://github.com/RobTillaart/INA226.git
+[submodule "external/libdeps/SparkFun_MAX3010x_Sensor_Library"]
+	path = external/libdeps/SparkFun_MAX3010x_Sensor_Library
+	url = https://github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library.git
+[submodule "external/libdeps/SparkFun_ICM-20948_ArduinoLibrary"]
+	path = external/libdeps/SparkFun_ICM-20948_ArduinoLibrary
+	url = https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary.git
+[submodule "external/libdeps/motion.arduino.ICM42670P"]
+	path = external/libdeps/motion.arduino.ICM42670P
+	url = https://github.com/tdk-invn-oss/motion.arduino.ICM42670P.git
+[submodule "external/libdeps/Adafruit_LTR390"]
+	path = external/libdeps/Adafruit_LTR390
+	url = https://github.com/adafruit/Adafruit_LTR390.git
+[submodule "external/libdeps/Adafruit_PCT2075"]
+	path = external/libdeps/Adafruit_PCT2075
+	url = https://github.com/adafruit/Adafruit_PCT2075.git
+[submodule "external/libdeps/DFRobot_BMM150"]
+	path = external/libdeps/DFRobot_BMM150
+	url = https://github.com/DFRobot/DFRobot_BMM150.git
+[submodule "external/libdeps/SparkFun_MMC5983MA_Magnetometer_Arduino_Library"]
+	path = external/libdeps/SparkFun_MMC5983MA_Magnetometer_Arduino_Library
+	url = https://github.com/sparkfun/SparkFun_MMC5983MA_Magnetometer_Arduino_Library.git
+[submodule "external/libdeps/Adafruit_TSL2561"]
+	path = external/libdeps/Adafruit_TSL2561
+	url = https://github.com/adafruit/Adafruit_TSL2561.git
+[submodule "external/libdeps/BH1750_WE"]
+	path = external/libdeps/BH1750_WE
+	url = https://github.com/wollewald/BH1750_WE.git
+[submodule "external/libdeps/Fusion"]
+	path = external/libdeps/Fusion
+	url = https://github.com/meshtastic/Fusion.git
+[submodule "external/libdeps/arduino-core"]
+	path = external/libdeps/arduino-core
+	url = https://github.com/Sensirion/arduino-core.git
+[submodule "external/libdeps/arduino-i2c-scd4x"]
+	path = external/libdeps/arduino-i2c-scd4x
+	url = https://github.com/Sensirion/arduino-i2c-scd4x.git
+[submodule "external/libdeps/arduino-i2c-sfa3x"]
+	path = external/libdeps/arduino-i2c-sfa3x
+	url = https://github.com/Sensirion/arduino-i2c-sfa3x.git
+[submodule "external/libdeps/arduino-i2c-scd30"]
+	path = external/libdeps/arduino-i2c-scd30
+	url = https://github.com/Sensirion/arduino-i2c-scd30.git
+[submodule "external/libdeps/arduino-sht"]
+	path = external/libdeps/arduino-sht
+	url = https://github.com/Sensirion/arduino-sht.git
+[submodule "external/libdeps/Adafruit_SPA06_003"]
+	path = external/libdeps/Adafruit_SPA06_003
+	url = https://github.com/adafruit/Adafruit_SPA06_003.git
+[submodule "external/libdeps/Seeed_PM2_5_sensor_HM3301"]
+	path = external/libdeps/Seeed_PM2_5_sensor_HM3301
+	url = https://github.com/meshtastic/Seeed_PM2_5_sensor_HM3301.git
+[submodule "external/libdeps/libch341-spi-userspace"]
+	path = external/libdeps/libch341-spi-userspace
+	url = https://github.com/meshtastic/libch341-spi-userspace.git
+[submodule "external/libdeps/RAK12034-BMX160"]
+	path = external/libdeps/RAK12034-BMX160
+	url = https://github.com/RAKWireless/RAK12034-BMX160.git
+[submodule "external/libdeps/Adafruit_BME680"]
+	path = external/libdeps/Adafruit_BME680
+	url = https://github.com/adafruit/Adafruit_BME680.git
+[submodule "external/libdeps/LovyanGFX"]
+	path = external/libdeps/LovyanGFX
+	url = https://github.com/lovyan03/LovyanGFX.git
+[submodule "external/libdeps/Adafruit_Seesaw"]
+	path = external/libdeps/Adafruit_Seesaw
+	url = https://github.com/adafruit/Adafruit_Seesaw.git
+[submodule "external/libdeps/Melopero_RV-3028_Arduino_Library"]
+	path = external/libdeps/Melopero_RV-3028_Arduino_Library
+	url = https://github.com/melopero/Melopero_RV-3028_Arduino_Library.git
+[submodule "external/libdeps/Adafruit-ST7735-Library"]
+	path = external/libdeps/Adafruit-ST7735-Library
+	url = https://github.com/adafruit/Adafruit-ST7735-Library.git
+[submodule "external/libdeps/SD"]
+	path = external/libdeps/SD
+	url = https://github.com/arduino-libraries/SD.git
+[submodule "external/libdeps/Unity"]
+	path = external/libdeps/Unity
+	url = https://github.com/ThrowTheSwitch/Unity.git

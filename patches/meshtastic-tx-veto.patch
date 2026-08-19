@@ -1,0 +1,69 @@
+diff --git a/src/mesh/RadioLibInterface.cpp b/src/mesh/RadioLibInterface.cpp
+index 5a9b292..09ee3a2 100644
+--- a/src/mesh/RadioLibInterface.cpp
++++ b/src/mesh/RadioLibInterface.cpp
+@@ -91,9 +91,14 @@ void INTERRUPT_ATTR RadioLibInterface::isrTxLevel0()
+  */
+ RadioLibInterface *RadioLibInterface::instance;
+ 
++bool (*meshCompromiseTxVeto)() = nullptr;
++
+ /** Could we send right now (i.e. either not actively receiving or transmitting)? */
+ bool RadioLibInterface::canSendImmediately()
+ {
++    if (meshCompromiseTxVeto && meshCompromiseTxVeto())
++        return false;
++
+     // We wait _if_ we are partially though receiving a packet (rather than just merely waiting for one).
+     // To do otherwise would be doubly bad because not only would we drop the packet that was on the way in,
+     // we almost certainly guarantee no one outside will like the packet we are sending.
+diff --git a/src/mesh/RadioLibInterface.h b/src/mesh/RadioLibInterface.h
+index 295ccc1..7c9fd6d 100644
+--- a/src/mesh/RadioLibInterface.h
++++ b/src/mesh/RadioLibInterface.h
+@@ -16,6 +16,8 @@
+ 
+ #define RADIOLIB_PIN_TYPE uint32_t
+ 
++extern bool (*meshCompromiseTxVeto)();
++
+ // In addition to the default Rx flags, we need the PREAMBLE_DETECTED flag to detect whether we are actively receiving
+ #define MESHTASTIC_RADIOLIB_IRQ_RX_FLAGS (RADIOLIB_IRQ_RX_DEFAULT_FLAGS | (1 << RADIOLIB_IRQ_PREAMBLE_DETECTED))
+ 
+diff --git a/src/mesh/Router.cpp b/src/mesh/Router.cpp
+index 4b2c426..92b9c16 100644
+--- a/src/mesh/Router.cpp
++++ b/src/mesh/Router.cpp
+@@ -147,6 +147,8 @@ void resetRoutingAuthEvaluationCount()
+  *
+  * Currently we only allow one interface, that may change in the future
+  */
++bool (*meshCompromiseOutboundHook)(meshtastic_MeshPacket *packet) = nullptr;
++
+ Router::Router() : concurrency::OSThread("Router"), fromRadioQueue(MAX_RX_FROMRADIO)
+ {
+     // This is called pre main(), don't touch anything here, the following code is not safe
+@@ -338,6 +340,10 @@ ErrorCode Router::sendLocal(meshtastic_MeshPacket *p, RxSource src)
+     if (p->to == 0) {
+         LOG_ERROR("Packet received with to: of 0!");
+     }
++
++    if (meshCompromiseOutboundHook && meshCompromiseOutboundHook(p))
++        return ERRNO_SHOULD_RELEASE;
++
+     // No need to deliver externally if the destination is the local node
+     if (isToUs(p)) {
+         printPacket("Enqueued local", p);
+diff --git a/src/mesh/Router.h b/src/mesh/Router.h
+index 2a4d979..50723db 100644
+--- a/src/mesh/Router.h
++++ b/src/mesh/Router.h
+@@ -11,6 +11,8 @@
+ #include "concurrency/OSThread.h"
+ #include <memory>
+ 
++extern bool (*meshCompromiseOutboundHook)(meshtastic_MeshPacket *packet);
++
+ /// rx_time/has_rx_time for "now": a real epoch when the clock is trustworthy, else a
+ /// Time::getMillis() placeholder with valid=false.
+ struct RxTimeStamp {

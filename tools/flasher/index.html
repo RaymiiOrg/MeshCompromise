@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MeshCompromise Flasher</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <svg viewBox="0 0 260 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Illustration of an M5Stack Cardputer ADV with a LoRa module">
+    <rect x="66" y="4" width="128" height="30" rx="5" fill="#2b2f3a"/>
+    <rect x="76" y="11" width="108" height="16" rx="3" fill="#1b1f28"/>
+    <text x="130" y="24" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#8b95a6">LoRa 1262</text>
+    <rect x="150" y="0" width="4" height="8" rx="2" fill="#ff9f1c"/>
+    <rect x="14" y="30" width="232" height="152" rx="14" fill="#20242e"/>
+    <rect x="14" y="30" width="232" height="152" rx="14" fill="none" stroke="#333a48" stroke-width="2"/>
+    <rect x="26" y="42" width="150" height="58" rx="4" fill="#0a0d13"/>
+    <rect x="30" y="46" width="142" height="50" rx="2" fill="#07090d"/>
+    <text x="36" y="60" font-family="ui-monospace, monospace" font-size="9" fill="#ff9f1c">MeshCore</text>
+    <text x="36" y="72" font-family="ui-monospace, monospace" font-size="8" fill="#cfe3ff">listening aligned</text>
+    <text x="36" y="83" font-family="ui-monospace, monospace" font-size="8" fill="#cfe3ff">869.618 SF8</text>
+    <text x="36" y="93" font-family="ui-monospace, monospace" font-size="8" fill="#8b95a6">rx 42 tx 9</text>
+    <rect x="186" y="42" width="48" height="58" rx="5" fill="#ff9f1c" opacity="0.9"/>
+    <circle cx="210" cy="71" r="15" fill="#20242e"/>
+    <circle cx="210" cy="71" r="6" fill="#0a0d13"/>
+    <g fill="#2b303c">
+      <rect x="26" y="110" width="18" height="14" rx="3"/>
+      <rect x="48" y="110" width="18" height="14" rx="3"/>
+      <rect x="70" y="110" width="18" height="14" rx="3"/>
+      <rect x="92" y="110" width="18" height="14" rx="3"/>
+      <rect x="114" y="110" width="18" height="14" rx="3"/>
+      <rect x="136" y="110" width="18" height="14" rx="3"/>
+      <rect x="158" y="110" width="18" height="14" rx="3"/>
+      <rect x="180" y="110" width="18" height="14" rx="3"/>
+      <rect x="202" y="110" width="32" height="14" rx="3"/>
+      <rect x="26" y="128" width="18" height="14" rx="3"/>
+      <rect x="48" y="128" width="18" height="14" rx="3"/>
+      <rect x="70" y="128" width="18" height="14" rx="3"/>
+      <rect x="92" y="128" width="18" height="14" rx="3"/>
+      <rect x="114" y="128" width="18" height="14" rx="3"/>
+      <rect x="136" y="128" width="18" height="14" rx="3"/>
+      <rect x="158" y="128" width="18" height="14" rx="3"/>
+      <rect x="180" y="128" width="18" height="14" rx="3"/>
+      <rect x="202" y="128" width="32" height="14" rx="3"/>
+      <rect x="26" y="146" width="18" height="14" rx="3"/>
+      <rect x="48" y="146" width="18" height="14" rx="3"/>
+      <rect x="70" y="146" width="18" height="14" rx="3"/>
+      <rect x="92" y="146" width="18" height="14" rx="3"/>
+      <rect x="114" y="146" width="18" height="14" rx="3"/>
+      <rect x="136" y="146" width="18" height="14" rx="3"/>
+      <rect x="158" y="146" width="18" height="14" rx="3"/>
+      <rect x="180" y="146" width="54" height="14" rx="3"/>
+      <rect x="26" y="164" width="40" height="12" rx="3"/>
+      <rect x="70" y="164" width="106" height="12" rx="3" fill="#39404f"/>
+      <rect x="180" y="164" width="54" height="12" rx="3"/>
+    </g>
+    <rect x="118" y="182" width="24" height="5" rx="2" fill="#39404f"/>
+  </svg>
+
+  <div>
+    <h1>MeshCompromise Flasher</h1>
+    <p class="sub">Flash a Meshtastic&#8239;+&#8239;MeshCore build to an M5Stack Cardputer ADV straight from the browser.</p>
+  </div>
+  <nav><a href="../monitor/">Serial Monitor &rarr;</a></nav>
+</header>
+
+<div class="card">
+  <h2>1 &middot; Firmware</h2>
+  <div class="drop" id="drop" tabindex="0" role="button">
+    <strong>Click to choose files</strong> or drop firmware here<br>
+    <span class="note"><code>firmware.factory.bin</code> gets 0x0, <code>firmware.bin</code> gets 0x10000. Offsets stay editable.</span><br>
+    <span class="note">Files chosen by clicking are re-read from disk on every flash, so a rebuild needs no re-adding. Dropped files are snapshots.</span>
+  </div>
+  <input type="file" id="picker" accept=".bin" multiple hidden>
+  <ul class="files" id="files"></ul>
+</div>
+
+<div class="card">
+  <h2>2 &middot; Device</h2>
+  <div class="row">
+    <button class="primary" id="connect">Connect</button>
+    <button id="flash">Flash</button>
+    <button id="disconnect">Disconnect</button>
+    <label>Baud
+      <select id="baud">
+        <option value="921600" selected>921600</option>
+        <option value="460800">460800</option>
+        <option value="230400">230400</option>
+        <option value="115200">115200</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="erase"> Erase all first</label>
+    <span class="status" id="status">not connected</span>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Log</h2>
+  <pre class="log" id="log"></pre>
+</div>
+
+<div class="card">
+  <h2>What you should see afterwards</h2>
+  <div class="shots">
+    <figure>
+      <img src="../../docs/images/ui-status.svg" alt="MeshCore status frame on the device display">
+      <figcaption>Status frame &mdash; mode, radio parameters, counters, mirror state.</figcaption>
+    </figure>
+    <figure>
+      <img src="../../docs/images/ui-settings.svg" alt="MeshCore settings frame on the device display">
+      <figcaption>Settings frame &mdash; double-tap select (or long-press, on hardware that supports it) to open, arrows to edit.</figcaption>
+    </figure>
+    <figure>
+      <img src="../../docs/images/ui-settings-scrolled.svg" alt="MeshCore settings frame scrolled while editing">
+      <figcaption>Scrolled while editing &mdash; the cursor stays on the last row.</figcaption>
+    </figure>
+  </div>
+  <p class="note">Rendered from the firmware's own strings and layout constants &mdash; real 240&times;135 panel, the 19px font <code>HAS_SPI_TFT</code> selects, the six rows <code>getTextPositions()</code> gives, and the header <code>drawCommonHeader()</code> paints. Not photographs, and the glyphs are Arial rather than the device's bitmap font. The board is an illustration too.</p>
+</div>
+
+<div class="card warn">
+  <h2>Requirements</h2>
+  <p class="note">
+    This uses the <strong>Web Serial API</strong>, so it needs Chrome or Edge 89 or later &mdash; Firefox and Safari will not work.
+    It must be served rather than opened as a file. From the repository root run <code>python3 -m http.server 8000</code> and open
+    <code>http://localhost:8000/tools/flasher/</code>. If no port appears when connecting, hold <strong>G0</strong> and tap reset to force download mode.
+  </p>
+</div>
+
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
